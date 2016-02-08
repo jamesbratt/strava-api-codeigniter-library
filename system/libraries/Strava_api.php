@@ -120,5 +120,37 @@ class CI_strava_api {
 		
 		curl_close ($get_token);
 
+	}
+	
+	/**
+	 * A function to get all strava activities 
+	 * A valid token must be passed from the controller  
+	*/	
+	public function getActivities($token)
+	{
+		
+		/**
+		 * Define an array of header values to send in the curl request   
+		 * The authorisation header is critical here  
+		*/			
+		$headers = array('Authorization: Bearer ' . $token, 'per_page=1');
+		$get_activities = curl_init();
+		
+		curl_setopt($get_activities, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($get_activities, CURLOPT_URL, $this->activities_url);
+		curl_setopt($get_activities, CURLOPT_HTTPHEADER, $headers);
+		curl_setopt($get_activities, CURLOPT_RETURNTRANSFER, true);
+
+		$activityResponse = curl_exec ($get_activities);
+		
+		if(curl_errno($get_activities))
+		{
+			echo 'Curl error: ' . curl_error($get_activities);
+		}
+		
+		return $activityResponse;
+		
+		curl_close ($get_activities);
+		
 	}	
 }
