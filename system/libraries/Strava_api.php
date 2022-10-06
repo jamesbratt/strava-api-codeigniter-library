@@ -36,53 +36,8 @@
  * @since	Version 1.0.0
  * @filesource
  */
-/* #region ToDo */
-/*
 
- * Activities
-  Create an Activity
-  Get Activity Zones
-  Update Activity
-
- * Athletes
-  Update Athlete
-
- * Clubs
-  Join Club
-  Leave Club
-
- * Routes
-  Get Route
-  List Athlete Routes
-
- * RunningRaces
-  Get Running Race
-  List Running Races
-
- * SegmentEfforts
-  List Segment Efforts
-  Get Segment Effort
-
- * Segments
-  Explore segments
-  Get Segment Leaderboard
-  List Starred Segments
-  Get Segment
-  Star Segment
-
- * Streams
-  Get Activity Streams
-  Get segment effort streams
-  Get Segment Streams
-
- * Uploads
-  Upload Activity
-  Get Upload
- */
-/* #endregion */
-
-
-defined('BASEPATH') OR exit('No direct script access allowed');
+defined('BASEPATH') or exit('No direct script access allowed');
 
 /**
  * CLass for leveraging the Strava API
@@ -93,7 +48,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  * @author		James Bratt
  * @link		
  */
-class CI_strava_api {
+class CI_strava_api
+{
 
     protected $ci;
     protected $client_id;
@@ -108,8 +64,9 @@ class CI_strava_api {
      * This involves adding your strava app id, client id and api uris to the $config array
      * In application/config/config.php
      */
-    public function __construct() {
-        $this->ci = & get_instance();
+    public function __construct()
+    {
+        $this->ci = &get_instance();
 
         $this->client_id = $this->ci->config->item('client_id');
         $this->client_secret = $this->ci->config->item('client_secret');
@@ -124,7 +81,8 @@ class CI_strava_api {
      * 
      * @return string
      */
-    public function getToken($url) {
+    public function getToken($url)
+    {
         /**
          * Extract auth code from the url  
          */
@@ -175,13 +133,14 @@ class CI_strava_api {
      * 
      * @return string
      */
-    public function getListOfActivities($token, $page = 1, $per_page = 30, $before = 0, $after = 0) {
+    public function getListOfActivities($token, $page = 1, $per_page = 30, $before = 0, $after = 0)
+    {
         $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $per_page, 'page=' . $page);
-        if ($before > 0){
-            array_push($headers,'before=' . $before);
+        if ($before > 0) {
+            array_push($headers, 'before=' . $before);
         }
-        if ($after > 0){
-            array_push($headers,'after=' . $after);
+        if ($after > 0) {
+            array_push($headers, 'after=' . $after);
         }
         $curl_handler = curl_init();
         $this->CurlOptions($curl_handler, $headers, $this->ci->config->item('list_athlete_activities'));
@@ -205,12 +164,13 @@ class CI_strava_api {
      * @return string
      * 
      */
-    public function getActivity($token, $idActivity, $all_efforts=true) {
+    public function getActivity($token, $idActivity, $all_efforts = true)
+    {
         $headers = array('Authorization: Bearer ' . $token);
-        if($all_efforts){
-            array_push($headers,'include_all_efforts=true');
+        if ($all_efforts) {
+            array_push($headers, 'include_all_efforts=true');
         } else {
-            array_push($headers,'include_all_efforts=false');
+            array_push($headers, 'include_all_efforts=false');
         }
         $curl_handler = curl_init();
 
@@ -237,7 +197,8 @@ class CI_strava_api {
      * @param int $page Page number. Defaults to 1.
      * @return string
      */
-    public function getActivityComments($token, $idActivity, $per_page = 200, $page = 1) {
+    public function getActivityComments($token, $idActivity, $per_page = 200, $page = 1)
+    {
         $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $per_page, 'page=' . $page);
         $curl_handler = curl_init();
 
@@ -263,11 +224,14 @@ class CI_strava_api {
      * @param int $page Page number. Defaults to 1.
      * @return string
      */
-    public function getActivityKudoers($token, $idActivity, $per_page = 200, $page = 1) {
-        $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $per_page, 'page=' . $page);
+    public function getActivityKudoers($token, $idActivity, $per_page = 200, $page = 1)
+    {
+        $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
 
         $url = str_replace("{id}", $idActivity, $this->ci->config->item('list_activity_kudoers_url'));
+        $url = str_replace("{page}", $page, $url);
+        $url = str_replace("{per_page}", $per_page, $url);
         $this->CurlOptions($curl_handler, $headers, $url);
 
         $activityResponse = curl_exec($curl_handler);
@@ -287,7 +251,8 @@ class CI_strava_api {
      * @param string $idActivity The identifier of the activity.
      * @return string
      */
-    public function getActivityLaps($token, $idActivity) {
+    public function getActivityLaps($token, $idActivity)
+    {
         $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
 
@@ -311,7 +276,8 @@ class CI_strava_api {
      * @param string $token
      * @return string
      */
-    public function getAthlete($token) {
+    public function getAthlete($token)
+    {
         $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
 
@@ -332,7 +298,8 @@ class CI_strava_api {
      * @param string $token
      * @return string
      */
-    public function getAthleteZones($token) {
+    public function getAthleteZones($token)
+    {
         $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
 
@@ -354,7 +321,8 @@ class CI_strava_api {
      * @param string $id The identifier of the athlete. Must match the authenticated athlete.
      * @return string
      */
-    public function getAthleteStats($token, $id) {
+    public function getAthleteStats($token, $id)
+    {
         $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
         $url = str_replace("{id}", $id, $this->ci->config->item('get_athlete_stats_url'));
@@ -384,7 +352,8 @@ class CI_strava_api {
      * @param int $per_page Number of items per page. Defaults to 30.
      * @return string
      */
-    public function getListOfClubActivities($token, $id, $page = 1, $per_page = 30) {
+    public function getListOfClubActivities($token, $id, $page = 1, $per_page = 30)
+    {
         $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $page, 'per_page=' . $per_page);
         $curl_handler = curl_init();
 
@@ -410,7 +379,8 @@ class CI_strava_api {
      * @param int $per_page Number of items per page. Defaults to 30.
      * @return string
      */
-    public function getClubAdministrators($token, $id, $page = 1, $per_page = 30) {
+    public function getClubAdministrators($token, $id, $page = 1, $per_page = 30)
+    {
         $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $page, 'per_page=' . $per_page);
         $curl_handler = curl_init();
 
@@ -434,7 +404,8 @@ class CI_strava_api {
      * @param string $id The identifier of the club.
      * @return string
      */
-    public function getClub($token, $id) {
+    public function getClub($token, $id)
+    {
         $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
 
@@ -460,7 +431,8 @@ class CI_strava_api {
      * @param int $per_page Number of items per page. Defaults to 30.
      * @return string
      */
-    public function getClubMembers($token, $id, $page = 1, $per_page = 30) {
+    public function getClubMembers($token, $id, $page = 1, $per_page = 30)
+    {
         $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $page, 'per_page=' . $per_page);
         $curl_handler = curl_init();
 
@@ -485,7 +457,8 @@ class CI_strava_api {
      * @param int $per_page Number of items per page. Defaults to 30.
      * @return string
      */
-    public function getAthleteClubs($token, $page = 1, $per_page = 30) {
+    public function getAthleteClubs($token, $page = 1, $per_page = 30)
+    {
         $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $page, 'per_page=' . $per_page);
         $curl_handler = curl_init();
 
@@ -510,7 +483,8 @@ class CI_strava_api {
      * @param string $id The identifier of the gear.
      * @return string
      */
-    public function getGear($token, $id) {
+    public function getGear($token, $id)
+    {
         $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
 
@@ -531,8 +505,216 @@ class CI_strava_api {
     }
 
     /* #endregion */
+    /* #region Routes */
+    /**
+     * Returns a route using its identifier. Requires read_all scope for private routes.
+     * 
+     * @param string $token Token from athlete
+     * @param string $id The identifier of the route.
+     * 
+     * @return string
+     */
+    public function getRoute($token, $id)
+    {
+        $headers = array('Authorization: Bearer ' . $token);
+        $curl_handler = curl_init();
+
+        $url = str_replace("{id}", $id, $this->ci->config->item('get_route_url'));
+        curl_setopt($curl_handler, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl_handler, CURLOPT_URL, $url);
+        curl_setopt($curl_handler, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($curl_handler, CURLOPT_RETURNTRANSFER, true);
+
+        $activityResponse = curl_exec($curl_handler);
+
+        if (curl_errno($curl_handler)) {
+            echo 'Curl error: ' . curl_error($curl_handler);
+        }
+
+        curl_close($curl_handler);
+        return $activityResponse;
+    }
+
+    /**
+     * Returns a list of the routes created by the authenticated athlete. Private routes are filtered out unless requested by a token with read_all scope.
+     * 
+     * @param string $token
+     * @param int $id Athlete id
+     * @param int $page Page number. Defaults to 1.
+     * @param int $per_page Number of items per page. Defaults to 30.
+     * 
+     * @return string
+     */
+    public function getListOfRoutesFromAthlete($token, $id, $page = 1, $per_page = 30)
+    {
+        $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $per_page, 'page=' . $page);
+
+        $url = str_replace("{id}", $id, $this->ci->config->item('list_athlete_routes_url'));
+        $url = str_replace("{page}", $page, $url);
+        $url = str_replace("{per_page}", $per_page, $url);
+
+        $curl_handler = curl_init();
+        $this->CurlOptions($curl_handler, $headers, $url);
+        $activityResponse = curl_exec($curl_handler);
+
+        if (curl_errno($curl_handler)) {
+            echo 'Curl error: ' . curl_error($curl_handler);
+        }
+
+        curl_close($curl_handler);
+        return $activityResponse;
+    }
+    /* #endregion */
+    /* #region Segment Efforts */
+
+    /**
+     * Returns a set of the authenticated athlete's segment efforts for a given segment. Requires subscription.
+     * 
+     * @param mixed $token
+     * @param string $segment_id The identifier of the segment.
+     * @param string $start_date ISO 8601 (YYYY-MM-DD) formatted date time.
+     * @param string $end_date ISO 8601 (YYYY-MM-DD) formatted date time.
+     * @param int $per_page Number of items per page. Defaults to 30.
+     * 
+     * @return string
+     */
+    function getListSegmentEfforts($token, $segment_id, $start_date, $end_date, $per_page = 30)
+    {
+        $headers = array('Authorization: Bearer ' . $token);
+
+        $url = str_replace("{segment_id}", $segment_id, $this->ci->config->item('list_segment_efforts_url'));
+        $url = str_replace("{start_date_local}", $start_date, $url);
+        $url = str_replace("{end_date_local}", $end_date, $url);
+        $url = str_replace("{per_page}", $per_page, $url);
+
+        $curl_handler = curl_init();
+        $this->CurlOptions($curl_handler, $headers, $url);
+        $activityResponse = curl_exec($curl_handler);
+
+        if (curl_errno($curl_handler)) {
+            echo 'Curl error: ' . curl_error($curl_handler);
+        }
+
+        curl_close($curl_handler);
+        return $activityResponse;
+    }
+
+    /**
+     * Returns a segment effort from an activity that is owned by the authenticated athlete. Requires subscription.
+     * 
+     * @param string $token
+     * @param string $segment_id
+     * 
+     * @return string
+     */
+    function getSegmentEffort($token, $segment_id)
+    {
+        $headers = array('Authorization: Bearer ' . $token);
+
+        $url = str_replace("{segment_id}", $segment_id, $this->ci->config->item('get_segment_effort_url'));
+
+        $curl_handler = curl_init();
+        $this->CurlOptions($curl_handler, $headers, $url);
+        $activityResponse = curl_exec($curl_handler);
+
+        if (curl_errno($curl_handler)) {
+            echo 'Curl error: ' . curl_error($curl_handler);
+        }
+
+        curl_close($curl_handler);
+        return $activityResponse;
+    }
+    /* #endregion */
+    /* #region Segments */
+
+    /**
+     * Returns the top 10 segments matching a specified query.
+     * 
+     * @param string $token
+     * @param string $bounds The latitude and longitude for two points describing a rectangular boundary for the search: [southwest corner latitutde, southwest corner longitude, northeast corner latitude, northeast corner longitude]
+     * @param string $activity_type Desired activity type. May take one of the following values: running, riding
+     * @param string $min_cat The minimum climbing category.
+     * @param string $max_cat The maximum climbing category.
+     * 
+     * @return string
+     */
+    function getSegmentsExplore($token, $bounds, $activity_type, $min_cat, $max_cat)
+    {
+        $headers = array('Authorization: Bearer ' . $token);
+
+        $url = str_replace("{bounds}", $bounds,  $this->ci->config->item('explore_segments_url'));
+        $url = str_replace("{activity_type}", $activity_type, $url);
+        $url = str_replace("{min_cat}", $min_cat, $url);
+        $url = str_replace("{max_cat}", $max_cat, $url);
+
+        $curl_handler = curl_init();
+        $this->CurlOptions($curl_handler, $headers, $url);
+        $activityResponse = curl_exec($curl_handler);
+
+        if (curl_errno($curl_handler)) {
+            echo 'Curl error: ' . curl_error($curl_handler);
+        }
+
+        curl_close($curl_handler);
+        return $activityResponse;
+    }
+
+    /**
+     * List of the authenticated athlete's starred segments. Private segments are filtered out unless requested by a token with read_all scope.
+     * 
+     * @param mixed $token
+     * @param int $page Page number. Defaults to 1.
+     * @param int $per_page Number of items per page. Defaults to 30.
+     * 
+     * @return string
+     */
+    function getSegmentsStarred($token, $page = 1, $per_page = 30){
+        $headers = array('Authorization: Bearer ' . $token);
+
+        $url = str_replace("{page}", $page,  $this->ci->config->item('list_starred_segments_url'));
+        $url = str_replace("{per_page}", $per_page, $url);
+
+        $curl_handler = curl_init();
+        $this->CurlOptions($curl_handler, $headers, $url);
+        $activityResponse = curl_exec($curl_handler);
+
+        if (curl_errno($curl_handler)) {
+            echo 'Curl error: ' . curl_error($curl_handler);
+        }
+
+        curl_close($curl_handler);
+        return $activityResponse;
+    }
+
+    /**
+     * Returns the specified segment. read_all scope required in order to retrieve athlete-specific segment information, or to retrieve private segments.
+     * 
+     * @param string $token
+     * @param int $id
+     * 
+     * @return string
+     */
+    function getSegment($token, $id){
+        $headers = array('Authorization: Bearer ' . $token);
+
+        $url = str_replace("{id}", $id,  $this->ci->config->item('get_segment_url'));
+
+        $curl_handler = curl_init();
+        $this->CurlOptions($curl_handler, $headers, $url);
+        $activityResponse = curl_exec($curl_handler);
+
+        if (curl_errno($curl_handler)) {
+            echo 'Curl error: ' . curl_error($curl_handler);
+        }
+
+        curl_close($curl_handler);
+        return $activityResponse;
+    }
+
+    /* #endregion */
     /* #region CURL config */
-    private function CurlOptions($handler, $headers, $url) {
+    private function CurlOptions($handler, $headers, $url)
+    {
         curl_setopt($handler, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($handler, CURLOPT_URL, $url);
         curl_setopt($handler, CURLOPT_HTTPHEADER, $headers);
