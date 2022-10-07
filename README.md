@@ -1,7 +1,7 @@
 # strava-api-codeigniter-library - v.1.2
 A Codeigniter v3 library class that leverages the Strava API. This library wasn't tested in CI4.
 
-This library is in use on [HeatMap site (portuguese language)](https://www.rafaelamorim.com.br/heatmap)
+This library is in use on [Rafael Amorim HeatMap (portuguese language)](https://www.rafaelamorim.com.br/heatmap).
 
 See [Strava API documentation](https://developers.strava.com/) to get more information.
 
