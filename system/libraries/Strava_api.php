@@ -70,54 +70,181 @@ class CI_strava_api
 
         $this->client_id = $this->ci->config->item('client_id');
         $this->client_secret = $this->ci->config->item('client_secret');
-        $this->oath_url = $this->ci->config->item('oath_url');
+        $this->oath_url = $this->ci->config->item('oath_token_url');
+        $this->oauth_access_level = $this->ci->config->item('oauth_access_level');
+    }
+
+
+    /**
+     * Show link to request strava authentication
+     * 
+     * @param string $msg Message or html code to show link
+     * @param boolean $openPopUp return javascript popup?
+     * @param string $retFunction JS function to call on return
+     * @return string
+     */
+    public function RequestAuthLink($msg = "Your text here", $openPopUp = false, $retFunction)
+    {
+
+        if (!$openPopUp) {
+            $ret = "<a href='https://www.strava.com/oauth/authorize?client_id=";
+            $ret .= $this->client_id . "&response_type=code&redirect_uri=";
+            $ret .= base_url() . $retFunction . "&scope=" . $this->oauth_access_level;
+            $ret .= "&approval_prompt=force'>$msg</a> ";
+        } else {
+            $ret = "<a href='#' onclick=\"javascript:window.open('https://www.strava.com/oauth/authorize?client_id=";
+            $ret .= $this->client_id . "&response_type=code&redirect_uri=";
+            $ret .= base_url() . $retFunction . "&scope=" . $this->oauth_access_level;
+            $ret .= "&approval_prompt=force', '_blank', 'toolbar=yes,scrollbars=yes,";
+            $ret .= "resizable=yes,top=150,left=150,width=800,height=600');\">$msg</a> ";
+        }
+        return $ret;
     }
 
     /**
-     * A function for requesting an oath token from the strava api. The token is then used to authenticate further api calls.
-     * Pass the strava redirect url from a controller  
-     * 
-     * @param string $url
+     * A function for requesting an oath token from the strava api
      * 
      * @return string
      */
-    public function getToken($url)
+    public function getToken()
     {
-        /**
-         * Extract auth code from the url  
-         */
-        parse_str($url, $params);
-        $code = $params['code'];
-
-        /**
-         * Use curl post request against the strava oauth endpoint 
-         */
-        $get_token = curl_init();
-
-        curl_setopt($get_token, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($get_token, CURLOPT_URL, $this->oath_url);
-        curl_setopt($get_token, CURLOPT_POST, 1);
-
-        curl_setopt($get_token, CURLOPT_POSTFIELDS, http_build_query(array('client_id' => $this->client_id, 'client_secret' => $this->client_secret, 'code' => $code)));
-
-        curl_setopt($get_token, CURLOPT_RETURNTRANSFER, true);
-
-        $tokenResponse = curl_exec($get_token);
-
-        if (curl_errno($get_token)) {
-            echo 'Curl error: ' . curl_error($get_token);
+        $tokenResponse = $this->getTokenData();
+        if ($tokenResponse !== false) {
+            return $tokenResponse['access_token'];
+        } else {
+            return false;
         }
+    }
 
-        /**
-         * Decode the response to extract the token
-         */
-        $decodedToken = json_decode($tokenResponse, true);
+    /**
+     * Get refresh token key
+     * 
+     * @param string $token Connection token
+     * @return string or false, on error
+     */
+    public function getRefreshToken($token)
+    {
+        $tokenResponse = $this->getTokenData('refresh_token', $token);
+        if ($tokenResponse !== false) {
+            return $tokenResponse['refresh_token'];
+        } else {
+            return false;
+        }
+    }
 
-        $token = $decodedToken['access_token'];
+    /**
+     * Get the expires_at field from token request
+     * 
+     * @param mixed $token
+     * 
+     * @return int
+     */
+    public function getExpireToken($token)
+    {
+        $tokenResponse = $this->getTokenData();
+        if ($tokenResponse !== false) {
+            return $tokenResponse['expires_at'];
+        } else {
+            return false;
+        }
+    }
 
-        return $token;
+    /**
+     * Perform a upgrade on token OAuth to strava new rule. After 10-15-2019 this function will be removed
+     * 
+     * @param type $token Forever_Access_Token_For_User
+     * @return boolean
+     */
+    public function upgradeAceessToken($token)
+    {
+        $tokenResponse = $this->getTokenData('refresh_token', $token);
+        if ($tokenResponse !== false) {
+            return $tokenResponse;
+        } else {
+            return false;
+        }
+    }
 
-        curl_close($get_token);
+    /**
+     * Get a refresh access token
+     * 
+     * @param mixed $refresh_token
+     * @param string $returnField
+     * 
+     * @return [type]
+     */
+    public function requestAceessToken($refresh_token, $returnField = 'access_token')
+    {
+        $tokenResponse = $this->getTokenData('refresh_token', $refresh_token);
+        if ($tokenResponse !== false) {
+            return $tokenResponse[$returnField];
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Get token data
+     * 
+     * @param string $grant_type Options are 'authorization_code' or 'refresh_token'
+     * @param string $refresh_token In case of grant_type='refresh_token', refresh_token is needed
+     * @return array or false, on error
+     */
+    public function getTokenData($grant_type = 'authorization_code', $refresh_token = null)
+    {
+
+        $params = array();
+        $curl_params = array();
+
+        if (isset($_SERVER['QUERY_STRING'])) {
+            $currentURL = current_url() . "?" . $_SERVER['QUERY_STRING'];
+            parse_str($currentURL, $params);
+
+            if ($grant_type == 'authorization_code') //only needed if grant_type=authorization_code 
+                $code = $params['code'];
+
+            $get_token = curl_init();
+
+            if ($grant_type == 'refresh_token' && is_null($refresh_token)) {
+                echo "Parameter null found. Exiting...";
+                return false;
+            }
+
+            switch ($grant_type) {
+                case 'authorization_code':
+                    $curl_params = array(
+                        'client_id' => $this->client_id,
+                        'client_secret' => $this->client_secret,
+                        'code' => $code, 'grant_type' => $grant_type
+                    );
+                    break;
+                case 'refresh_token':
+                    $curl_params = array(
+                        'client_id' => $this->client_id,
+                        'client_secret' => $this->client_secret,
+                        'grant_type' => $grant_type,
+                        'refresh_token' => $refresh_token
+                    );
+                    break;
+                default:
+                    return false;
+                    break;
+            }
+            $this->CurlOptions($get_token, null, $this->oath_url, true, http_build_query($curl_params));
+
+            curl_setopt($get_token, CURLOPT_RETURNTRANSFER, true);
+
+            $decodedToken = json_decode(curl_exec($get_token), true);
+
+            if (curl_errno($get_token)) {
+                echo 'Curl error: ' . curl_error($get_token);
+                return false;
+            }
+            return $decodedToken;
+        } else {
+            echo "Parameter code not found. Exiting...";
+            return false;
+        }
     }
 
     /* #region Activities*/
@@ -135,7 +262,7 @@ class CI_strava_api
      */
     public function getListOfActivities($token, $page = 1, $per_page = 30, $before = 0, $after = 0)
     {
-        $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $per_page, 'page=' . $page);
+        $headers = array('Authorization: Bearer ' . $token);
         if ($before > 0) {
             array_push($headers, 'before=' . $before);
         }
@@ -143,7 +270,7 @@ class CI_strava_api
             array_push($headers, 'after=' . $after);
         }
         $curl_handler = curl_init();
-        $this->CurlOptions($curl_handler, $headers, $this->ci->config->item('list_athlete_activities'));
+        $this->CurlOptions($curl_handler, $headers, $this->ci->config->item('list_athlete_activities') . '?page=' . $page . '&per_page=' . $per_page);
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
@@ -199,10 +326,10 @@ class CI_strava_api
      */
     public function getActivityComments($token, $idActivity, $per_page = 200, $page = 1)
     {
-        $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $per_page, 'page=' . $page);
+        $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
 
-        $url = str_replace("{id}", $idActivity, $this->ci->config->item('list_activity_comments_url'));
+        $url = str_replace("{id}", $idActivity, $this->ci->config->item('list_activity_comments_url') . '?page=' . $page . '&per_page=' . $per_page);
         $this->CurlOptions($curl_handler, $headers, $url);
         $activityResponse = curl_exec($curl_handler);
 
@@ -320,13 +447,15 @@ class CI_strava_api
      * 
      * @param string $token Token from athlete
      * @param string $id The identifier of the athlete. Must match the authenticated athlete.
+     * @param int $page
+     * @param int $per_page
      * @return string
      */
-    public function getAthleteStats($token, $id)
+    public function getAthleteStats($token, $id, $page = 1, $per_page = 30)
     {
         $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
-        $url = str_replace("{id}", $id, $this->ci->config->item('get_athlete_stats_url'));
+        $url = str_replace("{id}", $id, $this->ci->config->item('get_athlete_stats_url') . '?page=' . $page . '&per_page=' . $per_page);
 
         $this->CurlOptions($curl_handler, $headers, $url);
         $activityResponse = curl_exec($curl_handler);
@@ -356,10 +485,10 @@ class CI_strava_api
      */
     public function getListOfClubActivities($token, $id, $page = 1, $per_page = 30)
     {
-        $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $page, 'per_page=' . $per_page);
+        $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
 
-        $url = str_replace("{id}", $id, $this->ci->config->item('list_club_activities_url'));
+        $url = str_replace("{id}", $id, $this->ci->config->item('list_club_activities_url'). '?page=' . $page . '&per_page=' . $per_page);
         $this->CurlOptions($curl_handler, $headers, $url);
 
         $activityResponse = curl_exec($curl_handler);
@@ -383,10 +512,10 @@ class CI_strava_api
      */
     public function getClubAdministrators($token, $id, $page = 1, $per_page = 30)
     {
-        $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $page, 'per_page=' . $per_page);
+        $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
 
-        $url = str_replace("{id}", $id, $this->ci->config->item('list_club_administrators_url'));
+        $url = str_replace("{id}", $id, $this->ci->config->item('list_club_administrators_url') . '?page=' . $page . '&per_page=' . $per_page);
         $this->CurlOptions($curl_handler, $headers, $url);
 
         $activityResponse = curl_exec($curl_handler);
@@ -435,10 +564,10 @@ class CI_strava_api
      */
     public function getClubMembers($token, $id, $page = 1, $per_page = 30)
     {
-        $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $page, 'per_page=' . $per_page);
+        $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
 
-        $url = str_replace("{id}", $id, $this->ci->config->item('list_club_members_url'));
+        $url = str_replace("{id}", $id, $this->ci->config->item('list_club_members_url') . '?page=' . $page . '&per_page=' . $per_page);
         $this->CurlOptions($curl_handler, $headers, $url);
 
         $activityResponse = curl_exec($curl_handler);
@@ -461,10 +590,10 @@ class CI_strava_api
      */
     public function getAthleteClubs($token, $page = 1, $per_page = 30)
     {
-        $headers = array('Authorization: Bearer ' . $token, 'per_page=' . $page, 'per_page=' . $per_page);
+        $headers = array('Authorization: Bearer ' . $token);
         $curl_handler = curl_init();
 
-        $this->CurlOptions($curl_handler, $headers, $this->ci->config->item('list_athlete_clubs_url'));
+        $this->CurlOptions($curl_handler, $headers, $this->ci->config->item('list_athlete_clubs_url'). '?page=' . $page . '&per_page=' . $per_page);
 
         $activityResponse = curl_exec($curl_handler);
 
@@ -672,7 +801,8 @@ class CI_strava_api
      * 
      * @return string
      */
-    function getSegmentsStarred($token, $page = 1, $per_page = 30){
+    function getSegmentsStarred($token, $page = 1, $per_page = 30)
+    {
         $headers = array('Authorization: Bearer ' . $token);
 
         $url = str_replace("{page}", $page,  $this->ci->config->item('list_starred_segments_url'));
@@ -698,7 +828,8 @@ class CI_strava_api
      * 
      * @return string
      */
-    function getSegment($token, $id){
+    function getSegment($token, $id)
+    {
         $headers = array('Authorization: Bearer ' . $token);
 
         $url = str_replace("{id}", $id,  $this->ci->config->item('get_segment_url'));
@@ -718,12 +849,25 @@ class CI_strava_api
     /* #endregion */
     /* #region CURL config */
 
-    private function CurlOptions($handler, $headers, $url)
-    {
+    private function CurlOptions($handler, $headers = null, $url, $optPost = false, $optPostFields = null) {
         curl_setopt($handler, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($handler, CURLOPT_URL, $url);
-        curl_setopt($handler, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($handler, CURLOPT_RETURNTRANSFER, true);
+
+        if (!is_null($url)) {
+            curl_setopt($handler, CURLOPT_URL, $url);
+        }
+
+        if (!is_null($headers)) {
+            curl_setopt($handler, CURLOPT_HTTPHEADER, $headers);
+        }
+
+        if ($optPost != false) {
+            curl_setopt($handler, CURLOPT_POST, $optPost);
+        }
+
+        if ($optPostFields != null) {
+            curl_setopt($handler, CURLOPT_POSTFIELDS, $optPostFields);
+        }
     }
 
     /* #endregion */
