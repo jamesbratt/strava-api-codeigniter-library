@@ -12,7 +12,14 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 $config['client_id'] = '';
 $config['client_secret'] = '';
+$config['oauth_access_level'] = 'profile:read_all,activity:read_all';
 
+
+/* 
+ *   BE CAREFUL TO CHANGE VALUES BELOW  
+ */
+
+$config['oath_token_url'] = 'https://www.strava.com/oauth/token';
 $config['oath_url'] = 'https://www.strava.com/oauth/authorize';
 
 //activities
