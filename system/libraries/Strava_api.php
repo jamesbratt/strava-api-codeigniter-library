@@ -269,7 +269,8 @@ class CI_strava_api
     }
 
     /* #endregion */
-    /* #region Atlhetes*/
+    /* #region Atlhetes */
+
     /**
      * Returns the currently authenticated athlete.
      * 
@@ -339,7 +340,8 @@ class CI_strava_api
     }
 
     /* #endregion */
-    /* #region Clubs*/
+    /* #region Clubs */
+
     /**
      * Retrieve recent activities from members of a specific club. 
      * The authenticated athlete must belong to the requested club in 
@@ -475,7 +477,8 @@ class CI_strava_api
     }
 
     /* #endregion */
-    /* #region Gears*/
+    /* #region Gears */
+
     /**
      * Returns an equipment using its identifier.
      * 
@@ -506,6 +509,7 @@ class CI_strava_api
 
     /* #endregion */
     /* #region Routes */
+
     /**
      * Returns a route using its identifier. Requires read_all scope for private routes.
      * 
@@ -603,7 +607,7 @@ class CI_strava_api
      * Returns a segment effort from an activity that is owned by the authenticated athlete. Requires subscription.
      * 
      * @param string $token
-     * @param string $segment_id
+     * @param string $segment_id The identifier of the segment effort.
      * 
      * @return string
      */
@@ -690,7 +694,7 @@ class CI_strava_api
      * Returns the specified segment. read_all scope required in order to retrieve athlete-specific segment information, or to retrieve private segments.
      * 
      * @param string $token
-     * @param int $id
+     * @param int $id The identifier of the segment.
      * 
      * @return string
      */
@@ -713,6 +717,7 @@ class CI_strava_api
 
     /* #endregion */
     /* #region CURL config */
+
     private function CurlOptions($handler, $headers, $url)
     {
         curl_setopt($handler, CURLOPT_SSL_VERIFYPEER, false);
