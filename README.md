@@ -1,13 +1,21 @@
-# strava-api-codeigniter-library
-A Codeigniter library class that leverages the Strava API. 
+# strava-api-codeigniter-library - v.1.2
+A Codeigniter v3 library class that leverages the Strava API. This library wasn't tested in CI4.
 
-See [Strava API documentation](https://developers.strava.com/) to get more information
+This library is in use on [HeatMap site (portuguese language)](https://www.rafaelamorim.com.br/heatmap)
+
+See [Strava API documentation](https://developers.strava.com/) to get more information.
 
 ## Summary
 - [Install instructions](#install-instructions)
 - [Functions](#functions)
   - [General](#general)
+    - RequestAuthLink
     - getToken
+    - getRefreshToken
+    - getExpireToken
+    - upgradeAceessToken
+    - requestAceessToken
+    - getTokenData
   - [Activities](#activities)
     - getListOfActivities
     - getActivity
@@ -36,14 +44,23 @@ See [Strava API documentation](https://developers.strava.com/) to get more infor
     - getSegmentsExplore
     - getSegmentsStarred
     - getSegment
+- [ChangeLog](#changelog)
 - [Todo](#todo)
 - [Contributing](#contributing)
 
 ## Install instructions
- - Add 'strava' in application/config/autoload.php. Like this (if you don't have another file to load):
+  - Add 'strava' in application/config/autoload.php. Like this (if you don't have another file to load):
   <pre>$autoload['config'] = array('strava');</pre>
- - Create client_id and client_secret in Strava and put the values generated in application/config/strava.php. Details in this [site](https://developers.strava.com/docs/getting-started/#account)
-
+  - Create client_id and client_secret in Strava and put the values generated in application/config/strava.php. Details in this [site](https://developers.strava.com/docs/getting-started/#account)
+  - Adjust oauth_access_level in config/strava.php according to your application. Values can be:
+    - **read** - Allows access to public segments, public routes, public profile data, public posts, public events, club feeds, and leaderboards. This scope matches the old default scope, except it no longer includes access to activities and certain athlete endpoints mentioned below. 
+    - **read_all** - Allows access to view private routes, private segments, and private events. This scope matches the old view_private scope, except that it no longer includes access to private activities.
+    - **profile:read_all** - NEW! Allows access to read all profile information even if the user has set their profile visibility to “Followers” or “Only You.”
+    - **profile:write** - NEW! Allows access to update the user’s weight and Functional Threshold Power (FTP), and access to star or unstar segments on their behalf.
+    - **activity:read** - NEW! Allows access to read the user’s activity data for activities that are visible to “Everyone” and “Followers.”
+    - **activity:read_all** - NEW! Allows the same access as activity:read, plus access to read the athlete’s activities that are visible to “Only You.”
+    - **activity:write** - NEW! Allows access to create manual activities and uploads, and access to edit any activities that are visible to the app (based activity read access level).
+    - Source: [Strava OAuth options (2019-02-18)](https://developers.strava.com/docs/oauth-updates/)
 Have fun!
 
 ------------
@@ -51,10 +68,59 @@ Have fun!
 ## Functions
 
 ### General
-#### getToken(string  $url) : string
-A function for requesting an oath token from the strava api. The token is then used to authenticate further api calls.
 
-Pass the strava redirect url from a controller
+#### RequestAuthLink($msg = "Your text here", $openPopUp = false, $retFunction) : string
+Show link to request strava authentication
+
+- Parameters
+  - $msg : string => Message or html code to show link
+  - $openPopUp: boolean => return javascript popup? Default is false
+  - $retFunction : string => JS function to call on return
+- Return values:  string
+
+#### getToken() : string
+A function for requesting an oath token from the strava api
+
+- Parameters
+  - none
+- Return values:  string
+
+
+#### getRefreshToken($token) : string
+Get refresh token key
+
+- Parameters
+  - $token : string => Connection token
+- Return values:  string
+
+#### getExpireToken($token) : int
+Get the expires_at field from token request
+
+- Parameters
+  - $token : string => Connection token
+- Return values:  int
+
+#### upgradeAceessToken($token)
+Perform a upgrade on token OAuth to strava new rule. After 10-15-2019 this function will be removed.
+- Parameters
+  - $token : string => Forever_Access_Token_For_User
+- Return values:  boolean
+
+#### requestAceessToken($refresh_token, $returnField = 'access_token')
+Get a refresh access token
+      
+- Parameters
+  - $refresh_token : string => Refresh token
+  - $returnField : string => Field will be returned
+- Return values:  string or false
+     
+#### getTokenData($grant_type = 'authorization_code', $refresh_token = null)
+Get token data
+
+- Parameters
+  - $grant_type : string => Options are 'authorization_code' or 'refresh_token'
+  - $refresh_token : string => In case grant_type='refresh_token', refresh_token is needed
+- Return values:  array or false, on error
 
 ------------
 
@@ -126,12 +192,14 @@ Returns the the authenticated athlete's heart rate and power zones. Requires pro
  - $token : string
 - Return values: string
 
-#### getAthleteStats(string $token, string $id) : string
+#### getAthleteStats(string $token, string $id[, int $page = 1 ][, int $per_page = 30 ]) : string
 Returns the activity stats of an athlete. Only includes data from activities set to Everyone visibilty.
 
 - Parameters
  - $token : string => Token from athlete
  - $id : string => The identifier of the athlete. Must match the authenticated athlete.
+ - $page : int => Page number. Defaults to 1.
+ - $per_page : int => Number of items per page. Defaults to 30.
 - Return values: string
 
 ------------
@@ -274,6 +342,22 @@ Returns the specified segment. read_all scope required in order to retrieve athl
  - $token : string
  - $id : int => The identifier of the segment.
 - Return values: string
+
+------------
+
+## ChangeLog
+
+- 1.0.0 
+  - First version 
+- 1.1
+  - OAuth Strava updates, described in https://developers.strava.com/docs/oauth-updates/
+  - Some documentation
+- 1.2
+  - Added functions to Segments, SegmentEfforts, Clubs, Routes
+  - Added full documentation 
+  - Added CONTRIBUTORS.md in repo
+  - Added changelog into README.md
+
 
 ------------
 
