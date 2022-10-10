@@ -61,7 +61,7 @@ See [Strava API documentation](https://developers.strava.com/) to get more infor
     - **activity:read_all** - NEW! Allows the same access as activity:read, plus access to read the athlete’s activities that are visible to “Only You.”
     - **activity:write** - NEW! Allows access to create manual activities and uploads, and access to edit any activities that are visible to the app (based activity read access level).
     - Source: [Strava OAuth options (2019-02-18)](https://developers.strava.com/docs/oauth-updates/)
-    
+
 Have fun!
 
 ------------
@@ -358,6 +358,7 @@ Returns the specified segment. read_all scope required in order to retrieve athl
   - Added full documentation 
   - Added CONTRIBUTORS.md in repo
   - Added changelog into README.md
+  - All echo error messages have been replaced by log_message
 
 
 ------------

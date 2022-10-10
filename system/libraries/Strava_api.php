@@ -206,7 +206,7 @@ class CI_strava_api
             $get_token = curl_init();
 
             if ($grant_type == 'refresh_token' && is_null($refresh_token)) {
-                echo "Parameter null found. Exiting...";
+                log_message('error', 'Parameter null found');
                 return false;
             }
 
@@ -236,13 +236,13 @@ class CI_strava_api
 
             $decodedToken = json_decode(curl_exec($get_token), true);
 
-            if (curl_errno($get_token)) {
-                echo 'Curl error: ' . curl_error($get_token);
+            if (curl_errno($get_token)) {             
+                log_message('error', 'Curl error: ' . curl_error($get_token));
                 return false;
             }
             return $decodedToken;
         } else {
-            echo "Parameter code not found. Exiting...";
+            log_message('error', 'Parameter code not found.');
             return false;
         }
     }
@@ -274,7 +274,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -306,7 +306,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -334,7 +334,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -364,7 +364,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -388,7 +388,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -413,7 +413,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -435,7 +435,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -461,7 +461,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -494,7 +494,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -521,7 +521,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -546,7 +546,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -573,7 +573,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -598,7 +598,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -629,7 +629,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -661,7 +661,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -691,7 +691,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -725,7 +725,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -751,7 +751,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -785,7 +785,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -813,7 +813,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
@@ -839,7 +839,7 @@ class CI_strava_api
         $activityResponse = curl_exec($curl_handler);
 
         if (curl_errno($curl_handler)) {
-            echo 'Curl error: ' . curl_error($curl_handler);
+            log_message('error', 'Curl error: ' . curl_error($curl_handler));
         }
 
         curl_close($curl_handler);
